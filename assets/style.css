@@ -1,0 +1,36 @@
+.info-board {
+  text-align: center;
+}
+.board {
+  margin: auto;
+  width: fit-content;
+  border: 1px solid gray;
+}
+.game-row {
+  display: flex;
+  flex-direction: row;
+  width: 504px;
+}
+.game-square {
+  width: 40px;
+  height: 40px;
+  border: 1px solid white;
+  background-color: #ddd;
+}
+.border-square {
+  width: 40px;
+  height: 40px;
+  border: 1px solid white;
+  background-color: white;
+}
+.player-control {
+  margin: 10px auto 0 auto;
+  width: fit-content;
+}
+.game-piece {
+  border: 1px solid white;
+  margin: 3px;
+}
+#blue-bank {
+  display: none;
+}
