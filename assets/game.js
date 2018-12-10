@@ -26,6 +26,32 @@ function Piece (name, occupiedSpaces) {
   this.name = name;
   this.occupiedSpaces = occupiedSpaces;
   this.occupiedSpaces.push([0,0]);
+
+  this.mapPieces = function(){
+    var pieceMap = [];
+    for(let space of this.occupiedSpaces){
+      // Create a list of borders and delete those that arent needed
+      var thisSpaceBorders = ['top', 'right', 'bottom', 'left'];
+      for(let otherSpace of this.occupiedSpaces){
+        // There's a space to the right, so you can delete the right border...
+        if(space[0] === otherSpace[0]+1 && space[1] === otherSpace[1]){
+          thisSpaceBorders.splice(thisSpaceBorders.indexOf('left'), 1);
+        }
+        if(space[0] === otherSpace[0]-1 && space[1] === otherSpace[1]){
+          thisSpaceBorders.splice(thisSpaceBorders.indexOf('right'), 1);
+        }
+        if(space[1] === otherSpace[1]+1 && space[0] === otherSpace[0]){
+          thisSpaceBorders.splice(thisSpaceBorders.indexOf('top'), 1);
+        }
+        if(space[1] === otherSpace[1]-1 && space[0] === otherSpace[0]){
+          thisSpaceBorders.splice(thisSpaceBorders.indexOf('bottom'), 1);
+        }
+      }
+      pieceMap.push({coordinates: space, borders: thisSpaceBorders});
+    }
+    return pieceMap;
+  };
+  
   this.rotate = function(){
     let newSpaces = [];
     for(let space of this.occupiedSpaces){
@@ -145,12 +171,17 @@ var onClickSquare = function (event) {
     }
     if(isValidPlacement){
       // Color the squares
-      for(let occupiedSpace of selectedPiece.occupiedSpaces){
-        let spaceX = X + occupiedSpace[0];
-        let spaceY = Y + occupiedSpace[1];
+      let pieceSpaces = selectedPiece.mapPieces();
+      for(let pieceSpace of pieceSpaces){
+        let spaceX = X + pieceSpace.coordinates[0];
+        let spaceY = Y + pieceSpace.coordinates[1];
         board[spaceX][spaceY] = selectedPiece.name;
         let domElement = document.getElementById('x'+ spaceX + '-y' + spaceY);
         domElement.style.setProperty('background-color', selectedPiece.name === 'cathedral' ? 'white' : turn);
+        domElement.style.setProperty('border', '1px solid ' + (selectedPiece.name === 'cathedral' ? 'white' : turn));
+        for(border of pieceSpace.borders){
+          domElement.style.setProperty('border-' + border, '1px solid white');
+        }
       }
       if(selectedPiece.name === 'cathedral'){
         infoMessage.innerText = turn.charAt(0).toUpperCase() + turn.slice(1) + ' player\'s turn.'
@@ -294,6 +325,9 @@ var onSpacebar = function(event){
         case 'e':
           domElement.style.setProperty('background-color', '#ddd');
           break;
+        case 'c':
+          domElement.style.setProperty('background-color', 'white');
+          break;
         case 'y':
           if(board[spaceX][spaceY] === 'yellow'){
             domElement.style.setProperty('background-color', 'lightyellow');
@@ -342,7 +376,6 @@ for (let square of gameSquares){
   square.addEventListener('mouseenter', onMouseenter);
   square.addEventListener('mouseleave', onMouseleave);
   square.onkeyup = function(event){
-    console.log('zzzz');
     onSpacebar(event);
   };
 };
