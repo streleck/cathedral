@@ -16,6 +16,7 @@
   height: 40px;
   border: 1px solid white;
   background-color: #ddd;
+  border-radius: 2px;
 }
 .border-square {
   width: 40px;
