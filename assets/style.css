@@ -1,5 +1,10 @@
+body {
+  background-image: url("http://www.mountainsoftravelphotos.com/Argentina/11%20Salta%20Cathedral/slides/11%20Floor%20Tiles%20Inside%20Salta%20Cathedral.jpg");
+  background-size: contain;
+}
 .info-board {
   text-align: center;
+  background-color: white;
 }
 .board {
   margin: auto;
