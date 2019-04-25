@@ -1,0 +1,14 @@
+find out what quadrant the cathedral is in
+-place large piece touching middle row in a quadrant the cathedral is not in
+-if the cathedral is touching two quadrants, choose the line along the two opposing quadrants
+
+
+
+offense-score = your highest scoring increase next turn,
+defense-score = their highest scoring increase next turn,
+
+function howManySpacesToEdge() {...}
+
+
+
+offense-score = two-turns
