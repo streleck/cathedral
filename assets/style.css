@@ -5,7 +5,8 @@ body {
 }
 .info-board {
   text-align: center;
-  background-color: white;
+  background-color: transparent;
+  color: white;
 }
 .board {
   margin: auto;
