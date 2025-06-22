@@ -1,39 +1,66 @@
-var turn = 'yellow';
-var firstTurn = 'yellow';
-//var turn = Math.floor(2 * Math.random());
-var selectedPiece = {};
-var pieces = {};
-var cursor = [undefined, undefined];
-var gameSquares = document.getElementsByClassName('game-square');
-var borderSquares = document.getElementsByClassName('border-square');
-var infoMessage = document.getElementById('info-message');
-var skipButton = document.getElementById('skip');
+let turn = 'yellow';
+const firstTurn = 'yellow';
+//const turn = Math.floor(2 * Math.random());
+let selectedPiece = {};
+let pieces = {};
+let boardCursor = [undefined, undefined];
+const gameSquares = document.getElementsByClassName('game-square');
+const borderSquares = document.getElementsByClassName('border-square');
+const infoMessage = document.getElementById('info-message');
+const skipButton = document.getElementById('skip');
 
-var board = [
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty'],
-  ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty' ,'empty', 'empty']
-];
+const COLOR_MAP = {
+  pieces: {
+    blue: 'blue',
+    yellow: 'yellow',
+    cathedral: 'white'
+  },
+  emptySpaces: {
+    blue: '',
+    yellow: '',
+    unclaimed: '#ddd',
+  }
+}
 
-// Piece constructor
-function Piece (name, occupiedSpaces) {
+function Space (piece) {
+  this.piece = piece ?? null
+  this.owner = null
+}
+
+const makeBoard = (rows, columns) => {
+  const board = []
+  for (let i=0; i<rows; i++) {
+    const row = []
+    for (let j=0; j<columns; j++) {
+      row.push(new Space())
+    }
+    board.push(row)
+  }
+  return board
+}
+
+const opponentOf = (playerColor) => {
+  if (playerColor == 'yellow') {
+    return 'blue'
+  } else {
+    return 'yellow'
+  }
+}
+
+let board = makeBoard(10, 10)
+
+function Piece (player, name, occupiedSpaces) {
+  this.player = player;
   this.name = name;
   this.occupiedSpaces = occupiedSpaces;
   this.occupiedSpaces.push([0,0]);
   this.isAvailable = true;
 
   this.mapPieces = function(){
-    var pieceMap = [];
+    const pieceMap = [];
     for(let space of this.occupiedSpaces){
       // Create a list of borders and delete those that arent needed
-      var thisSpaceBorders = ['top', 'right', 'bottom', 'left'];
+      const thisSpaceBorders = ['top', 'right', 'bottom', 'left'];
       for(let otherSpace of this.occupiedSpaces){
         // There's a space to the right, so you can delete the right border...
         if(space[0] === otherSpace[0]+1 && space[1] === otherSpace[1]){
@@ -65,72 +92,47 @@ function Piece (name, occupiedSpaces) {
   }
 };
 
+const createPieces = () => {
+  return {
+    'blue-W': new Piece('blue', 'W', [[-1, -1], [-1, 0], [0, 1], [1, 1]]),
+    'blue-U': new Piece('blue', 'U', [[-1, -1], [-1, 0], [1, 0], [1, -1]]),
+    'blue-+': new Piece('blue', '+', [[-1, 0], [0, -1], [0, 1], [1, 0]]),
+    'blue-&': new Piece('blue', '&', [[-1, 0], [0, -1], [1, 1], [0, 1]]),
+    'blue-Z': new Piece('blue', 'Z', [[0, -1], [1, 0], [1, 1]]),
+    'blue-square': new Piece('blue', 'square', [[-1, 0], [-1, -1], [0, -1]]),
+    'blue-T': new Piece('blue', 'T', [[0, -1], [0, 1], [1, 0]]),
+    'blue-line': new Piece('blue', 'line', [[0, 1], [0, -1]]),
+    'blue-V1': new Piece('blue', 'V1', [[0, -1], [1, 0]]),
+    'blue-V2': new Piece('blue', 'V2', [[0, -1], [1, 0]]),
+    'blue-two1': new Piece('blue', 'two1', [[0, -1]]),
+    'blue-two2': new Piece('blue', 'two2', [[0, -1]]),
+    'blue-one1': new Piece('blue', 'one1', []),
+    'blue-one2':  new Piece('blue', 'one2', []),
+    'yellow-W': new Piece('yellow', 'W', [[-1, -1], [-1, 0], [0, 1], [1, 1]]),
+    'yellow-U': new Piece('yellow', 'U', [[-1, -1], [-1, 0], [1, 0], [1, -1]]),
+    'yellow-+': new Piece('yellow', '+', [[-1, 0], [0, -1], [0, 1], [1, 0]]),
+    'yellow-&': new Piece('yellow', '&', [[-1, 0], [0, -1], [1, 1], [0, 1]]),
+    'yellow-Z': new Piece('yellow', 'Z', [[0, -1], [1, 0], [1, 1]]),
+    'yellow-square': new Piece('yellow', 'square', [[-1, 0], [-1, -1], [0, -1]]),
+    'yellow-T': new Piece('yellow', 'T', [[0, -1], [0, 1], [1, 0]]),
+    'yellow-line': new Piece('yellow', 'line', [[0, 1], [0, -1]]),
+    'yellow-V1': new Piece('yellow', 'V1', [[0, -1], [1, 0]]),
+    'yellow-V2': new Piece('yellow', 'V2', [[0, -1], [1, 0]]),
+    'yellow-two1': new Piece('yellow', 'two1', [[0, -1]]),
+    'yellow-two2': new Piece('yellow', 'two2', [[0, -1]]),
+    'yellow-one1': new Piece('yellow', 'one1', []),
+    'yellow-one2':  new Piece('yellow', 'one2', []),
+    'cathedral': new Piece('cathedral', 'cathedral', [[-1, 0], [0, 1], [0, 2], [1, 0], [0, -1]])
+  }
+}
+
 function restartGame (){
-  // Fill piece banks
-  let newPiece = new Piece('blue-W', [[-1, -1], [-1, 0], [0, 1], [1, 1]]);
-  pieces['blue-W'] = newPiece;
-  newPiece = new Piece('blue-U', [[-1, -1], [-1, 0], [1, 0], [1, -1]]);
-  pieces['blue-U'] = newPiece;
-  newPiece = new Piece('blue-+', [[-1, 0], [0, -1], [0, 1], [1, 0]]);
-  pieces['blue-+'] = newPiece;
-  newPiece = new Piece('blue-&', [[-1, 0], [0, -1], [1, 1], [0, 1]]);
-  pieces['blue-&'] = newPiece;
-  newPiece = new Piece('blue-Z', [[0, -1], [1, 0], [1, 1]]);
-  pieces['blue-Z'] = newPiece;
-  newPiece = new Piece('blue-square', [[-1, 0], [-1, -1], [0, -1]]);
-  pieces['blue-square'] = newPiece;
-  newPiece = new Piece('blue-T', [[0, -1], [0, 1], [1, 0]]);
-  pieces['blue-T'] = newPiece;
-  newPiece = new Piece('blue-line', [[0, 1], [0, -1]]);
-  pieces['blue-line'] = newPiece;
-  newPiece = new Piece('blue-V1', [[0, -1], [1, 0]]);
-  pieces['blue-V1'] = newPiece;
-  newPiece = new Piece('blue-V2', [[0, -1], [1, 0]]);
-  pieces['blue-V2'] = newPiece;
-  newPiece = new Piece('blue-two1', [[0, -1]]);
-  pieces['blue-two1'] = newPiece;
-  newPiece = new Piece('blue-two2', [[0, -1]]);
-  pieces['blue-two2'] = newPiece;
-  newPiece = new Piece('blue-one1', []);
-  pieces['blue-one1'] = newPiece;
-  newPiece = new Piece('blue-one1', []);
-  pieces['blue-one2'] = newPiece;
-
-  newPiece = new Piece('yellow-W', [[-1, -1], [-1, 0], [0, 1], [1, 1]]);
-  pieces['yellow-W'] = newPiece;
-  newPiece = new Piece('yellow-U', [[-1, -1], [-1, 0], [1, 0], [1, -1]]);
-  pieces['yellow-U'] = newPiece;
-  newPiece = new Piece('yellow-+', [[-1, 0], [0, -1], [0, 1], [1, 0]]);
-  pieces['yellow-+'] = newPiece;
-  newPiece = new Piece('yellow-&', [[-1, 0], [0, -1], [1, 1], [0, 1]]);
-  pieces['yellow-&'] = newPiece;
-  newPiece = new Piece('yellow-Z', [[0, -1], [1, 0], [1, 1]]);
-  pieces['yellow-Z'] = newPiece;
-  newPiece = new Piece('yellow-square', [[-1, 0], [-1, -1], [0, -1]]);
-  pieces['yellow-square'] = newPiece;
-  newPiece = new Piece('yellow-T', [[0, -1], [0, 1], [1, 0]]);
-  pieces['yellow-T'] = newPiece;
-  newPiece = new Piece('yellow-line', [[0, -1], [0, 1]]);
-  pieces['yellow-line'] = newPiece;
-  newPiece = new Piece('yellow-V1', [[0, -1], [1, 0]]);
-  pieces['yellow-V1'] = newPiece;
-  newPiece = new Piece('yellow-V2', [[0, -1], [1, 0]]);
-  pieces['yellow-V2'] = newPiece;
-  newPiece = new Piece('yellow-two1', [[0, -1]]);
-  pieces['yellow-two1'] = newPiece;
-  newPiece = new Piece('yellow-two2', [[0, -1]]);
-  pieces['yellow-two2'] = newPiece;
-  newPiece = new Piece('yellow-one1', []);
-  pieces['yellow-one1'] = newPiece;
-  newPiece = new Piece('yellow-one1', []);
-  pieces['yellow-one2'] = newPiece;
-
-  // Create cathedral
-  selectedPiece = new Piece('cathedral', [[-1, 0], [0, 1], [0, 2], [1, 0], [0, -1]]);
+  pieces = createPieces()
+  selectedPiece = pieces.cathedral
 }
 
 
-var onClickPiece = function(event) {
+const onClickPiece = function(event) {
   // Don't let them choose a piece if they're placing the cathedral
   if (selectedPiece.name === 'cathedral'){
     return;
@@ -148,31 +150,32 @@ var onClickPiece = function(event) {
   event.target.style.setProperty('border', '1px solid red');
 }
 
-var onClickSquare = function (event) {
+const isPlacementValid = (board, X, Y, piece) => {
+  for(let occupiedSpace of piece.occupiedSpaces){
+    let spaceX = X + occupiedSpace[0];
+    let spaceY = Y + occupiedSpace[1];
+    
+    if(spaceX < 0 || spaceX > 9 || spaceY < 0 || spaceY > 9){
+      return false;
+    }
+    let thisSpace = board[spaceX][spaceY];
+    if(thisSpace.piece || thisSpace.owner === opponentOf(piece.player)){
+      return false
+    }
+  }
+  return true
+} 
+
+const onClickSquare = (event) => {
   let X = +event.target.id[1];
   let Y = +event.target.id[4];
   let square = board[X][Y];
   if(Object.keys(selectedPiece).length === 0){
     groupify(board, parseInt(event.target.id[1]), parseInt(event.target.id[4]));
     return;
-  }
-  else{
-    // Determine if the piece can go there  
-    let isValidPlacement = true;
-    for(let occupiedSpace of selectedPiece.occupiedSpaces){
-      let spaceX = X + occupiedSpace[0];
-      let spaceY = Y + occupiedSpace[1];
-      if(spaceX < 0 || spaceX > 9 || spaceY < 0 || spaceY > 9){
-        isValidPlacement = false;
-        break
-      }
-      let thisSpace = board[spaceX][spaceY];
-      if(thisSpace !== 'empty' && thisSpace !== turn){
-        isValidPlacement = false;
-        break
-      }
-    }
-    if(isValidPlacement){
+  } else {
+
+    if(isPlacementValid(board, X, Y, selectedPiece)){
       // Color the squares
       let pieceSpaces = selectedPiece.mapPieces();
       for(let pieceSpace of pieceSpaces){
@@ -188,8 +191,7 @@ var onClickSquare = function (event) {
       }
       if(selectedPiece.name === 'cathedral'){
         infoMessage.innerText = turn.charAt(0).toUpperCase() + turn.slice(1) + ' player\'s turn.'
-      }
-      else{
+      } else{
         // Make that piece unavailable, and do the turn-changing stuff
         pieces[selectedPiece.name].isAvailable = false;
         let pieceHtmlElement = document.getElementById(selectedPiece.name);
@@ -202,8 +204,7 @@ var onClickSquare = function (event) {
           yellowBank.style.setProperty('display', 'none');
           blueBank.style.setProperty('display', 'block');
           infoMessage.innerText = turn.charAt(0).toUpperCase() + turn.slice(1) + ' player\'s turn.'
-        }
-        else {
+        } else {
           turn = 'yellow';
           blueBank.style.setProperty('display', 'none');
           yellowBank.style.setProperty('display', 'block');
@@ -216,13 +217,13 @@ var onClickSquare = function (event) {
   }
 };
 
-var onMouseenter = function(event){
+const onMouseenter = function(event){
   if(!selectedPiece || Object.keys(selectedPiece).length === 0){
     return;
   }
   let X = +event.target.id[1];
   let Y = +event.target.id[4];
-  cursor = [X, Y];
+  boardCursor = [X, Y];
   for(let occupiedSpace of selectedPiece.occupiedSpaces){
     let spaceX = X + occupiedSpace[0];
     let spaceY = Y + occupiedSpace[1];
@@ -249,7 +250,9 @@ var onMouseenter = function(event){
     }
     else {
       let domElement = document.getElementById('x'+ spaceX + '-y' + spaceY);
-      if(board[spaceX][spaceY] === 'empty' || board[spaceX][spaceY] === turn){
+      console.log('eggg', spaceX, spaceY, board)
+      const space = board[spaceX][spaceY]
+      if(!space.piece && space.owner !== turn){
         domElement.style.setProperty('background-color', '#9f9');
       }
       else {
@@ -259,52 +262,37 @@ var onMouseenter = function(event){
   }
 };
 
-var onMouseleave = function(event){
-  cursor = [undefined, undefined];
+const onMouseleave = function(event){
+  boardCursor = [undefined, undefined];
   for(let square of borderSquares){
     square.style.setProperty('background-color', 'white');
   }
   let boardSquares = document.getElementsByClassName('game-square');
-  for(let square of gameSquares){
+
+  for(let square of boardSquares){
     let X = square.id[1];
     let Y = square.id[4];
-    switch(board[X][Y][0]){
-      case 'e':
-        square.style.setProperty('background-color', '#ddd');
-        break;
-      case 'c':
-        square.style.setProperty('background-color', 'white');
-        break;
-      case 'y':
-        if(board[X][Y] === 'yellow'){
-          square.style.setProperty('background-color', 'lightyellow');
-        }
-        else {
-          square.style.setProperty('background-color', 'yellow');
-        }
-        break;
-      case 'b':
-        if(board[X][Y] === 'blue'){
-          square.style.setProperty('background-color', 'lightblue');
-        }
-        else {
-          square.style.setProperty('background-color', 'blue');
-        }
-        break;
-      default:
-        break;
-    }
+    
+    const space = board[X][Y]
+    let color = COLOR_MAP.emptySpaces.unclaimed
+    if (space.piece) {
+      color = COLOR_MAP.pieces[space.piece.player]
+    } else if (space.owner) {
+      color = COLOR_MAP.space[space.owner]
+    } 
+
+    square.style.setProperty('background-color', color);
   }
 };
 
-var onSpacebar = function(event){
-  // If cursor not on board, do nothing
-  if (!cursor || (typeof cursor[1] !== 'number')){
+const onSpacebar = function(event){
+  // If boardCursor not on board, do nothing
+  if (!boardCursor || (typeof boardCursor[1] !== 'number')){
     return;
   }
   if(Object.keys(selectedPiece).length > 0){
-    let X = cursor[0];
-    let Y = cursor[1];
+    let X = boardCursor[0];
+    let Y = boardCursor[1];
     // Get rid of current highlighted squares
     for(let borderSquare of borderSquares){
       borderSquare.style.setProperty('background-color', 'white')
@@ -317,7 +305,7 @@ var onSpacebar = function(event){
         continue;
       }
       let domElement = document.getElementById('x'+ spaceX + '-y' + spaceY);
-      switch(board[spaceX][spaceY][0]){
+      switch(board[spaceX][spaceY].owner[0]){
         case 'e':
           domElement.style.setProperty('background-color', '#ddd');
           break;
@@ -400,7 +388,7 @@ for (let square of gameSquares){
 };
 
 // Create event listeners for pieces in bank
-var gamePieces = document.getElementsByClassName('game-piece');
+const gamePieces = document.getElementsByClassName('game-piece');
 for (let piece of gamePieces){
   piece.addEventListener('click', onClickPiece);
 };
@@ -434,12 +422,12 @@ skipButton.addEventListener('click', function(){
 });
 
 function groupify(gameBoard, X, Y){
-  var sameGroup = [X.toString() + Y.toString()];
-  var borderingPieces = [];
-  var checkNeighbors = function(coordinateString){
-    var X = parseInt(coordinateString[0])
-    var Y = parseInt(coordinateString[1])
-    var checkSquare = function(X, Y){
+  const sameGroup = [X.toString() + Y.toString()];
+  const borderingPieces = [];
+  const checkNeighbors = function(coordinateString){
+    const X = parseInt(coordinateString[0])
+    const Y = parseInt(coordinateString[1])
+    const checkSquare = function(X, Y){
       if(sameGroup.indexOf(X.toString() + Y.toString()) !== -1 || borderingPieces.indexOf(gameBoard[X][Y]) !== -1){
         return;
       }
