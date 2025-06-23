@@ -52,50 +52,52 @@ skipButton.addEventListener('click', function(){
   }
 })
 
+const checkSquare = function(X, Y){
+  if(sameGroup.indexOf(X.toString() + Y.toString()) !== -1 || borderingPieces.indexOf(gameBoard[X][Y]) !== -1){
+    return
+  }
+  else if(gameBoard[X][Y] === 'empty'){
+    sameGroup.push(X.toString() + Y.toString())
+    checkNeighbors(X.toString() + Y.toString())
+  }
+  else {
+    borderingPieces.push(gameBoard[X][Y])
+    return
+  }
+}
+
+const checkNeighbors = function(coordinateString){
+  const X = parseInt(coordinateString[0])
+  const Y = parseInt(coordinateString[1])
+  if(X>0 && Y>0){
+    checkSquare(X-1, Y-1)
+  }
+  if(X>0){
+    checkSquare(X-1, Y)
+  }
+  if(X>0 && Y<9){
+    checkSquare(X-1, Y+1)
+  }
+  if(Y>0){
+    checkSquare(X, Y-1)
+  }
+  if(Y<9){
+    checkSquare(X, Y+1)  
+  }
+  if(X<9 && Y>0){
+    checkSquare(X+1, Y-1)
+  }
+  if(X<9){
+    checkSquare(X+1, Y)
+  }
+  if(X<9 && Y<9){
+    checkSquare(X+1, Y+1)
+  }
+}
+
 function groupify(gameBoard, X, Y){
   const sameGroup = [X.toString() + Y.toString()]
   const borderingPieces = []
-  const checkNeighbors = function(coordinateString){
-    const X = parseInt(coordinateString[0])
-    const Y = parseInt(coordinateString[1])
-    const checkSquare = function(X, Y){
-      if(sameGroup.indexOf(X.toString() + Y.toString()) !== -1 || borderingPieces.indexOf(gameBoard[X][Y]) !== -1){
-        return
-      }
-      else if(gameBoard[X][Y] === 'empty'){
-        sameGroup.push(X.toString() + Y.toString())
-        checkNeighbors(X.toString() + Y.toString())
-      }
-      else {
-        borderingPieces.push(gameBoard[X][Y])
-        return
-      }
-    }
-    if(X>0 && Y>0){
-      checkSquare(X-1, Y-1)
-    }
-    if(X>0){
-      checkSquare(X-1, Y)
-    }
-    if(X>0 && Y<9){
-      checkSquare(X-1, Y+1)
-    }
-    if(Y>0){
-      checkSquare(X, Y-1)
-    }
-    if(Y<9){
-      checkSquare(X, Y+1)  
-    }
-    if(X<9 && Y>0){
-      checkSquare(X+1, Y-1)
-    }
-    if(X<9){
-      checkSquare(X+1, Y)
-    }
-    if(X<9 && Y<9){
-      checkSquare(X+1, Y+1)
-    }
-  }
   checkNeighbors(X.toString()+Y.toString())
   console.log('borders ', borderingPieces)
   console.log('group ', sameGroup)
@@ -187,6 +189,13 @@ function updateOwnership(gameBoard){
   return gameBoard
 }
 
+
+document.body.addEventListener('keypress', (event) => {
+    if(event.keyCode === 32){
+      event.preventDefault()
+      onSpacebar(event)
+    }
+})
 
 
 

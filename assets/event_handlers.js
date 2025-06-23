@@ -52,7 +52,6 @@ const onClickSquare = (event) => {
     let Y = +event.target.id[4]
     let square = board[X][Y]
     if(Object.keys(selectedPiece).length === 0){
-      groupify(board, parseInt(event.target.id[1]), parseInt(event.target.id[4]))
       return
     } else {
   
@@ -75,7 +74,6 @@ const onClickSquare = (event) => {
           infoMessage.innerText = turn.charAt(0).toUpperCase() + turn.slice(1) + ' player\'s turn.'
         } else{
           // Make that piece unavailable, and do the turn-changing stuff
-          console.log('cogs', selectedPiece, pieces)
           pieces[selectedPiece.name].isAvailable = false
           let pieceHtmlElement = document.getElementById(selectedPiece.name)
           pieceHtmlElement.style.setProperty('opacity', '0.0')
@@ -177,12 +175,5 @@ const onSpacebar = function(event){
         }
         highlightSquare(spaceX, spaceY)
       }
-    }
-}
-
-document.body.onkeypress = function(event){
-    if(event.keyCode === 32){
-      event.preventDefault()
-      onSpacebar(event)
     }
 }
